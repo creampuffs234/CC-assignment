@@ -1,37 +1,45 @@
+// src/pages/Wrapper.jsx
 import React, { useEffect, useState } from "react";
 import supabase from "../helper/supabaseClient";
 import { Navigate } from "react-router-dom";
+import Navbar from "../components/Navbar";
 
 function Wrapper({ children }) {
-  const [authentication, setauthenticated] = useState(false);
-  const [Loading, setLoading] = useState(true);
+  const [authenticated, setAuthenticated] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const getSession = async () => {
-        const{
-            data:{session},
-        }= await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
 
-//!!null -> faulse
-//{} -> true
-            setauthenticated(!!session);
-            setLoading(false);
-        
-
-    }
+      setAuthenticated(!!session);
+      setLoading(false);
+    };
 
     getSession();
-}, []);
+  }, []);
 
-    if (Loading) {
-        return <div>Loading....</div>
-    }
-    else {
-        if (authentication){
-        return <>{children}</>;
-    }
-    return <Navigate to= "/login"/>
-    }
+  if (loading) {
+    return <div className="p-6">Loading...</div>;
+  }
+
+  if (!authenticated) {
+    return <Navigate to="/login" />;
+  }
+
+  return (
+    <div>
+      {/* Navbar always visible for logged-in users */}
+      <Navbar />
+
+      {/* Page content (wrapped) */}
+      <div className="pt-16">
+        {children}
+      </div>
+    </div>
+  );
 }
 
-export default Wrapper
+export default Wrapper;
