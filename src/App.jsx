@@ -14,7 +14,6 @@ import Login from "./pages/Login.jsx";
 ------------------------------------------- */
 import Wrapper from "./pages/Wrapper.jsx";
 
-
 /* ------------------------------------------
    MAIN PROTECTED PAGES
 ------------------------------------------- */
@@ -51,66 +50,30 @@ function App() {
         <Route path="/adoption-approve/:id" element={<AdoptionApprove />} />
         <Route path="/adoption-reject/:id" element={<AdoptionReject />} />
 
-        {/* ---------- PROTECTED ROUTES (Require Login) ---------- */}
-        <Route
-          path="/dashboard"
-          element={<Wrapper><Dashboard /></Wrapper>}
-        />
+        {/* ---------- PROTECTED ROUTES ---------- */}
+        <Route path="/dashboard" element={<Wrapper><Dashboard /></Wrapper>} />
 
-        <Route
-          path="/marketplace"
-          element={<Wrapper><Marketplace /></Wrapper>}
-        />
+        <Route path="/marketplace" element={<Wrapper><Marketplace /></Wrapper>} />
 
-        <Route
-          path="/animal/:id"
-          element={<Wrapper><AnimalDetails /></Wrapper>}
-        />
+        <Route path="/animal/:id" element={<Wrapper><AnimalDetails /></Wrapper>} />
 
-        <Route
-          path="/adopt/:id"
-          element={<Wrapper><AdoptionForm /></Wrapper>}
-        />
+        <Route path="/adopt/:id" element={<Wrapper><AdoptionForm /></Wrapper>} />
 
-        <Route
-          path="/add-pet"
-          element={<Wrapper><AddPet /></Wrapper>}
-        />
+        <Route path="/add-pet" element={<Wrapper><AddPet /></Wrapper>} />
 
-        <Route
-          path="/notifications"
-          element={<Wrapper><Notifications /></Wrapper>}
-        />
+        <Route path="/notifications" element={<Wrapper><Notifications /></Wrapper>} />
 
-        <Route
-          path="/adoption-list"
-          element={<Wrapper><AdoptionList /></Wrapper>}
-        />
+        <Route path="/adoption-list" element={<Wrapper><AdoptionList /></Wrapper>} />
 
-        <Route
-          path="/create-shelter"
-          element={<Wrapper><CreateShelter /></Wrapper>}
-        />
+        <Route path="/create-shelter" element={<Wrapper><CreateShelter /></Wrapper>} />
 
-        <Route
-          path="/admin/shelters"
-          element={<Wrapper><AdminShelterRequests /></Wrapper>}
-        />
+        <Route path="/admin/shelters" element={<Wrapper><AdminShelterRequests /></Wrapper>} />
 
-        <Route
-          path="/shelter/:id"
-          element={<Wrapper><ShelterPage /></Wrapper>}
-        />
+        <Route path="/shelter/:id" element={<Wrapper><ShelterPage /></Wrapper>} />
 
-        <Route
-          path="/user/:id"
-          element={<Wrapper><UserPage /></Wrapper>}
-        />
+        <Route path="/user/:id" element={<Wrapper><UserPage /></Wrapper>} />
 
-        <Route
-          path="/rescue"
-          element={<Wrapper><RescueDashboard /></Wrapper>}
-        />
+        <Route path="/rescue" element={<Wrapper><RescueDashboard /></Wrapper>} />
 
       </Routes>
     </BrowserRouter>
