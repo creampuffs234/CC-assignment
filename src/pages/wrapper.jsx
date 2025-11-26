@@ -9,35 +9,26 @@ function Wrapper({ children }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const getSession = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
+    const checkAuth = async () => {
+      const { data: userData } = await supabase.auth.getUser();
+      const user = userData?.user;
 
-      setAuthenticated(!!session);
+      setAuthenticated(!!user);
       setLoading(false);
     };
 
-    getSession();
+    checkAuth();
   }, []);
 
-  if (loading) {
-    return <div className="p-6">Loading...</div>;
-  }
+  if (loading) return <div className="p-6">Loading...</div>;
 
-  if (!authenticated) {
-    return <Navigate to="/login" />;
-  }
+  // REDIRECT UNAUTHENTICATED USERS TO LOGIN (NOT HOME)
+  if (!authenticated) return <Navigate to="/login" />;
 
   return (
     <div>
-      {/* Navbar always visible for logged-in users */}
       <Navbar />
-
-      {/* Page content (wrapped) */}
-      <div className="pt-16">
-        {children}
-      </div>
+      <div>{children}</div>
     </div>
   );
 }

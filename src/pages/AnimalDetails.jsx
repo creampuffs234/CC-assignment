@@ -1,11 +1,13 @@
 // src/pages/AnimalDetails.jsx
 import React, { useEffect, useState } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { getAnimalById } from "../services/animalService";
+import AdoptionRequestForm from "../components/AdoptionRequestForm";
 
 export default function AnimalDetails() {
   const { id } = useParams();
   const [animal, setAnimal] = useState(null);
+  const [showRequest, setShowRequest] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -22,123 +24,48 @@ export default function AnimalDetails() {
 
   if (!animal) return <div className="p-6">Loading...</div>;
 
-  const isShelterPost = animal.shelter_id !== null;
-
   return (
     <div className="p-6 max-w-4xl mx-auto">
       <div className="bg-white rounded-xl shadow p-6">
-
-        {/* IMAGE */}
-        <img
-          src={animal.image_url || "/placeholder.jpg"}
-          alt={animal.title}
-          className="w-full h-64 object-cover rounded"
-        />
-
-        {/* SHELTER/USER BADGE */}
-        <div className="mt-3 flex justify-end">
-          <span
-            className={`
-              px-3 py-1 flex items-center gap-1 text-xs font-semibold 
-              rounded-full shadow-md
-              ${
-                isShelterPost
-                  ? "bg-gradient-to-r from-blue-500 to-blue-700 text-white"
-                  : "bg-purple-600 text-white"
-              }
-            `}
-          >
-            {isShelterPost ? (
-              <>
-                <span>🛡️</span> Verified Shelter
-              </>
-            ) : (
-              <>
-                <span>👤</span> User Post
-              </>
-            )}
-          </span>
-        </div>
-
-        {/* TITLE */}
+        <img src={animal.image_url || "/placeholder.jpg"} alt={animal.title} className="w-full h-64 object-cover rounded" />
         <h1 className="text-2xl font-bold mt-4">{animal.title}</h1>
-        <p className="text-gray-600">
-          {animal.species} • {animal.breed} • {animal.age}
-        </p>
-
-        {/* DESCRIPTION */}
+        <p className="text-gray-600">{animal.species} • {animal.breed} • {animal.age}</p>
         <p className="mt-4">{animal.description}</p>
 
-        {/* ADOPT BUTTONS */}
         <div className="mt-6 flex gap-3">
-          <button
-            onClick={() => navigate(`/adopt/${animal.id}`)}
-            className="bg-green-600 text-white px-4 py-2 rounded"
-          >
-            I'm interested (Adopt)
-          </button>
-          <button
-            onClick={() => navigate(-1)}
-            className="px-4 py-2 border rounded"
-          >
-            Back
-          </button>
+          <button onClick={() => setShowRequest(true)} className="bg-indigo-600 text-white px-4 py-2 rounded">Request Adoption</button>
+          <button onClick={() => navigate(-1)} className="px-4 py-2 border rounded">Back</button>
         </div>
 
-        {/* SHELTER INFO */}
         {animal.shelters && (
-          <div className="mt-8 p-4 border rounded bg-gray-50">
-            <h3 className="font-semibold text-lg mb-2 flex items-center gap-2">
-              🛡️ Shelter Information
-            </h3>
-
-            <p className="text-gray-800">{animal.shelters.name}</p>
-
-            {animal.shelters.phone && (
-              <p className="text-gray-600 mt-1">📞 {animal.shelters.phone}</p>
-            )}
-
-            {animal.shelters.address && (
-              <p className="text-gray-600 mt-1">{animal.shelters.address}</p>
-            )}
+          <div className="mt-6 p-4 border rounded">
+            <h3 className="font-semibold">Shelter</h3>
+            <p>{animal.shelters.name}</p>
+            <p>{animal.shelters.phone}</p>
+            <p>{animal.shelters.address}</p>
           </div>
         )}
 
-        {/* USER POSTER INFO */}
-        {!animal.shelter_id && (
-          <div className="mt-8 p-4 border rounded bg-gray-50">
-            <h3 className="font-semibold text-lg mb-3 flex items-center gap-2">
-              👤 Posted By
-            </h3>
-
-            <div className="flex items-center gap-4">
-              <img
-                src={animal.owner_avatar || "https://via.placeholder.com/80"}
-                alt="Owner avatar"
-                className="w-14 h-14 rounded-full object-cover border"
-              />
-
-              <div>
-                <Link
-                  to={`/user/${animal.owner_id}`}
-                  className="font-semibold text-indigo-600 hover:underline"
-                >
-                  {animal.owner_full_name || "Unknown User"}
-                </Link>
-
-                <p className="text-sm text-gray-600">{animal.owner_email}</p>
-
-                {animal.owner_phone && (
-                  <p className="text-sm text-gray-700 mt-1">
-                    📞 {animal.owner_phone}
-                  </p>
-                )}
-              </div>
-            </div>
-          </div>
+        {animal.owner_name && (
+          <div className="mt-4 text-sm text-gray-600">Posted by: {animal.owner_name}</div>
         )}
-
       </div>
+
+      {/* Request modal (simple) */}
+      {showRequest && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg w-full max-w-xl p-6 relative">
+            <button onClick={() => setShowRequest(false)} className="absolute top-3 right-3 text-gray-500">Close</button>
+            <h3 className="text-xl font-bold mb-3">Request Adoption — {animal.title}</h3>
+
+            <AdoptionRequestForm
+              animalId={animal.id}
+              animalTitle={animal.title}
+              onSuccess={() => setShowRequest(false)}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -7,28 +7,31 @@ import { getShelterByUser } from "../services/shelterService";
 export default function Dashboard() {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
-  const [profileType, setProfileType] = useState("user"); // user | shelter
-  const [shelterRow, setShelterRow] = useState(null); // shelter DB row if exists
+  const [profileType, setProfileType] = useState("user"); // user | shelter | pending
+  const [shelterRow, setShelterRow] = useState(null);
+  const [isRescue, setIsRescue] = useState(false);
 
   useEffect(() => {
     const loadUser = async () => {
       const { data: auth } = await supabase.auth.getUser();
       const authUser = auth?.user;
       setUser(authUser);
-      setProfileType("user");
-
       if (!authUser) return;
 
-      // find shelter row for this user
-      const { data: shelterData, error } = await getShelterByUser(authUser.id);
-      if (error) console.error("shelter lookup:", error);
+      // RESCUE TEAM CHECK
+      const { data: rescueCheck } = await supabase
+        .from("rescue_team")
+        .select("*")
+        .eq("user_email", authUser.email)
+        .maybeSingle();
+      if (rescueCheck) setIsRescue(true);
 
+      // SHELTER CHECK
+      const { data: shelterData } = await getShelterByUser(authUser.id);
       if (shelterData) {
         setShelterRow(shelterData);
         if (shelterData.status === "approved") setProfileType("shelter");
         else setProfileType("pending");
-      } else {
-        setShelterRow(null);
       }
     };
 
@@ -40,81 +43,129 @@ export default function Dashboard() {
     if (!error) navigate("/login");
   };
 
-  const portals = [
-    {
-      title: "Marketplace",
-      desc: "Browse animals available for adoption",
-      route: "/marketplace",
-      visible: true,
-    },
-    {
-      title: "Add a Pet",
-      desc: "Post a new pet for adoption",
-      route: "/add-pet",
-      visible: true,
-    },
-    {
-      title: "Adoption Requests",
-      desc:
-        profileType === "shelter"
-          ? "View requests submitted to your shelter"
-          : "View your submitted adoption applications",
-      route: "/adoption-list",
-      visible: true,
-    },
-    {
-      title: "Notifications",
-      desc: "See alerts & adoption updates",
-      route: "/notifications",
-      visible: true,
-    },
-    // Register Shelter button shows only if NOT approved AND no pending
-    {
-      title: "Register Shelter",
-      desc: "Apply to register your shelter (approval required)",
-      route: "/create-shelter",
-      visible: profileType === "user" && !shelterRow,
-    },
-    // My Shelter shown only when approved
-    {
-      title: "My Shelter",
-      desc: "Manage your shelter & listed animals",
-      route: `/shelter/${shelterRow?.id || user?.id}`,
-      visible: profileType === "shelter",
-    },
-  ];
-
   return (
-    <div className="min-h-screen bg-gradient-to-b from-red-400 to-green-700 text-white p-8">
-      <div className="max-w-4xl mx-auto mb-6 justify-center text-center">
+    <div className="min-h-screen bg-gradient-to-b from-green-700 to-purple-700 text-white p-8">
+      {/* HEADER */}
+      <div className="max-w-4xl mx-auto text-center mb-10">
         <h1 className="text-4xl font-bold">Dashboard</h1>
-        <p className="text-gray-300 mt-2">Welcome {user?.email || "User"}</p>
-        <p className="text-gray-400 text-sm mt-1 capitalize">
+        <p className="text-gray-200 mt-2">Welcome {user?.email}</p>
+        <p className="text-gray-300 text-sm capitalize">
           Account Type: {profileType}
         </p>
-        {shelterRow && shelterRow.status === "pending" && (
-          <p className="mt-2 text-yellow-300">
-            Shelter registration pending approval.
-          </p>
+
+        {shelterRow?.status === "pending" && (
+          <p className="text-yellow-300 mt-2">Shelter registration pending...</p>
         )}
-        {shelterRow && shelterRow.status === "rejected" && (
-          <p className="mt-2 text-red-300">Shelter registration was rejected.</p>
+        {shelterRow?.status === "rejected" && (
+          <p className="text-red-300 mt-2">Shelter registration was rejected.</p>
+        )}
+        {isRescue && (
+          <p className="text-blue-300 mt-2">Rescue Team Member</p>
         )}
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-4xl mx-auto">
-        {portals.filter((p) => p.visible).map((portal, idx) => (
-          <div
-            key={idx}
-            onClick={() => navigate(portal.route)}
-            className="cursor-pointer bg-black/30 backdrop-blur-md border border-white/10 p-6 rounded-2xl hover:bg-white/20 transition shadow-lg hover:shadow-xl transform hover:-translate-y-1"
-          >
-            <h3 className="text-2xl font-semibold mb-1">{portal.title}</h3>
-            <p className="text-blue-300">{portal.desc}</p>
+      {/* GRID */}
+      <div className="max-w-4xl mx-auto space-y-10">
+
+        {/* GENERAL FEATURES */}
+        <section>
+          <h2 className="text-2xl font-semibold mb-4">General</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <DashboardCard
+              title="Marketplace"
+              desc="Browse animals for adoption"
+              route="/marketplace"
+              navigate={navigate}
+            />
+
+            <DashboardCard
+              title="Add a Pet"
+              desc="Post a new pet for adoption"
+              route="/add-pet"
+              navigate={navigate}
+            />
+
+            <DashboardCard
+              title="Adoption Requests"
+              desc={
+                profileType === "shelter"
+                  ? "Requests submitted to your shelter"
+                  : "Your adoption requests"
+              }
+              route="/adoption-list"
+              navigate={navigate}
+            />
           </div>
-        ))}
+        </section>
+
+        {/* LOST & FOUND SECTION */}
+        <section>
+          <h2 className="text-2xl font-semibold mb-4">Lost & Found</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+
+            <DashboardCard
+              title="Report Lost Pet"
+              desc="Submit a lost pet report"
+              route="/report"
+              navigate={navigate}
+            />
+
+            <DashboardCard
+              title="Lost Reports"
+              desc="View all lost pet reports"
+              route="/lost-reports"
+              navigate={navigate}
+            />
+
+            <DashboardCard
+              title="My Lost Reports"
+              desc="View reports you submitted"
+              route="/user/reports"
+              navigate={navigate}
+            />
+          </div>
+        </section>
+
+        {/* SHELTER FEATURES */}
+        {profileType === "user" && !shelterRow && (
+          <section>
+            <h2 className="text-2xl font-semibold mb-4">Shelter Registration</h2>
+            <DashboardCard
+              title="Register Shelter"
+              desc="Apply to register your animal shelter"
+              route="/create-shelter"
+              navigate={navigate}
+            />
+          </section>
+        )}
+
+        {profileType === "shelter" && (
+          <section>
+            <h2 className="text-2xl font-semibold mb-4">Shelter Management</h2>
+            <DashboardCard
+              title="My Shelter"
+              desc="Manage shelter animals and lost reports"
+              route={`/shelter/${shelterRow?.id}`}
+              navigate={navigate}
+            />
+          </section>
+        )}
+
+        {/* RESCUE TEAM */}
+        {isRescue && (
+          <section>
+            <h2 className="text-2xl font-semibold mb-4">Rescue Team</h2>
+            <DashboardCard
+              title="Rescue Dashboard"
+              desc="Handle incoming lost pet alerts"
+              route="/rescue"
+              navigate={navigate}
+            />
+          </section>
+        )}
       </div>
 
+      {/* SIGN OUT */}
       <div className="mt-12 flex justify-center">
         <button
           onClick={Signout}
@@ -123,6 +174,21 @@ export default function Dashboard() {
           Sign Out
         </button>
       </div>
+    </div>
+  );
+}
+
+/* Reusable Card Component */
+function DashboardCard({ title, desc, route, navigate }) {
+  return (
+    <div
+      onClick={() => navigate(route)}
+      className="cursor-pointer bg-black/30 backdrop-blur-md border border-white/10 
+                 p-6 rounded-2xl hover:bg-white/20 transition shadow-lg hover:shadow-xl 
+                 transform hover:-translate-y-1"
+    >
+      <h3 className="text-xl font-semibold mb-1">{title}</h3>
+      <p className="text-blue-300 text-sm">{desc}</p>
     </div>
   );
 }

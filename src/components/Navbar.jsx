@@ -1,138 +1,161 @@
-// src/components/Navbar.jsx (Updated Styling)
+// src/components/Navbar.jsx (FINAL POLISHED UI)
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import supabase from "../helper/supabaseClient";
 
 export default function Navbar() {
-  const [user, setUser] = useState(null);
   const [isRescueUser, setIsRescueUser] = useState(false);
-  const [isMenuOpen, setIsMenuOpen] = useState(false); // UI State for mobile menu
+  const [user, setUser] = useState(null);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  // --- FUNCTIONAL LOGIC (UNCHANGED) ---
+  // Load User + Rescue Role
   useEffect(() => {
-    const load = async () => {
-      const { data } = await supabase.auth.getUser();
-      setUser(data?.user || null);
+    const loadUser = async () => {
+      const { data: sessionData } = await supabase.auth.getUser();
+      const authUser = sessionData?.user;
+      setUser(authUser);
 
-      if (data?.user) {
-        const { data: rescue } = await supabase
-          .from("rescue_team")
-          .select("id")
-          .eq("user_id", data.user.id)
-          .maybeSingle();
+      if (!authUser) return;
 
-        if (rescue) setIsRescueUser(true);
-      }
+      const { data } = await supabase
+        .from("rescue_team")
+        .select("id")
+        .eq("user_id", authUser.id)
+        .maybeSingle();
+
+      if (data) setIsRescueUser(true);
     };
-    load();
-  }, []);
-  // --- END FUNCTIONAL LOGIC ---
 
-  // Base classes for a standard link button/style
-  const baseLinkClasses = "px-3 py-2 text-sm font-medium rounded-lg transition duration-150";
-  // Classes for links in the mobile menu (block display)
-  const mobileLinkClasses = "block w-full text-left px-3 py-2 text-sm font-medium rounded-lg transition duration-150";
+    loadUser();
+  }, []);
+
+  // Base Classes (Refined Colors)
+  const baseLink = "px-3 py-2 text-sm font-semibold rounded-lg transition duration-200";
+  const mobileLink = "block w-full px-3 py-2 text-sm font-semibold rounded-lg transition duration-200";
 
   return (
-    // Dark Background, Sticky, Shadow
-    <nav className="w-full bg-gray-800 border-b border-indigo-500/50 sticky top-0 z-40 shadow-xl">
+    // Clean White background, stronger shadow
+    <nav className="w-full bg-white border-b border-gray-100 shadow-xl sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           
-          {/* Logo / Brand */}
-          <Link to="/" className="flex items-center space-x-2" onClick={() => setIsMenuOpen(false)}>
-            <span className="text-2xl font-extrabold text-indigo-400 tracking-tight">
-              PetLink 🐕
+          {/* LOGO */}
+          <Link
+            to="/"
+            className="flex items-center space-x-2"
+            onClick={() => setIsMenuOpen(false)}
+          >
+            <span className="text-3xl font-extrabold text-indigo-700 tracking-tight">
+              PetLink 🐾
             </span>
           </Link>
 
-          {/* Desktop Menu (Hidden on small screens) */}
-          <div className="hidden md:flex md:items-center md:space-x-2">
-            
-            {/* Main Nav Links (Light Text, Indigo Hover) */}
-            <Link to="/marketplace" className={`${baseLinkClasses} text-gray-300 hover:bg-indigo-600 hover:text-white`}>
+          {/* DESKTOP MENU */}
+          <div className="hidden md:flex md:items-center md:space-x-3">
+
+            {/* Main Links */}
+            <Link to="/marketplace" className={`${baseLink} text-gray-700 hover:bg-gray-100 hover:text-indigo-600`}>
               Marketplace
             </Link>
-            <Link to="/add-pet" className={`${baseLinkClasses} text-gray-300 hover:bg-indigo-600 hover:text-white`}>
-              Add Pet
-            </Link>
-            <Link to="/notifications" className={`${baseLinkClasses} text-gray-300 hover:bg-indigo-600 hover:text-white`}>
+            <Link to="/notifications" className={`${baseLink} text-gray-700 hover:bg-gray-100 hover:text-indigo-600`}>
               Notifications
             </Link>
 
-            {/* User Links Group */}
+            {/* PRIMARY ACTION LINK (Lost & Found) */}
+            <Link to="/report" className={`${baseLink} font-bold text-white bg-red-600 hover:bg-red-700 ml-2 shadow-md shadow-red-500/50`}>
+              🚨 Lost & Found
+            </Link>
+
+            {/* AUTHENTICATED USER LINKS (Separated by border) */}
             {user && (
-              <>
-                <Link to="/dashboard" className={`${baseLinkClasses} font-semibold text-indigo-300 hover:bg-indigo-600 hover:text-white ml-4`}>
+              <div className="flex items-center space-x-2 pl-5 border-l border-gray-200">
+
+                {/* Dashboard is the primary user landing page */}
+                <Link to="/dashboard" className={`${baseLink} font-bold text-indigo-600 hover:bg-indigo-50`}>
                   Dashboard
                 </Link>
-                <Link to={`/user/${user.id}`} className={`${baseLinkClasses} text-gray-300 hover:bg-gray-700 hover:text-white`}>
+
+                <Link to={`/user/${user.id}`} className={`${baseLink} text-gray-600 hover:bg-gray-100`}>
                   My Profile
                 </Link>
-              </>
+              </div>
             )}
 
-            {/* Rescue Team Link - Highlighted */}
+            {/* RESCUE USER SPECIAL LINK */}
             {isRescueUser && (
-              <Link to="/rescue" className={`${baseLinkClasses} font-bold text-yellow-300 bg-red-700 hover:bg-red-600 ml-4 border border-yellow-300`}>
-                🚨 Rescue Reports
+              <Link
+                to="/rescue"
+                className={`${baseLink} bg-teal-500 text-white font-bold hover:bg-teal-600 ml-4 shadow-md shadow-teal-500/50`}
+              >
+                Rescue Dashboard
               </Link>
             )}
-            
           </div>
 
-          {/* Mobile Menu Button */}
-          <div className="flex md:hidden">
-            <button
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              // Button color/icon contrast for dark mode
-              className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500"
-            >
-              {isMenuOpen ? (
-                  <svg className="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
-              ) : (
-                  <svg className="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
-              )}
-            </button>
-          </div>
+          {/* MOBILE MENU TOGGLE */}
+          <button
+            className="md:hidden p-2 rounded-md text-gray-500 hover:bg-gray-100"
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+          >
+            {isMenuOpen ? (
+              <svg className="w-6 h-6" fill="none" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
+                  d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            ) : (
+              <svg className="w-6 h-6" fill="none" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
+                  d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            )}
+          </button>
         </div>
       </div>
 
-      {/* Mobile Menu Content (Dropdown) */}
-      <div className={`md:hidden ${isMenuOpen ? 'block' : 'hidden'}`}>
-        {/* Dark background for mobile menu links */}
-        <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 border-t border-gray-700 bg-gray-700">
-          
-          <Link to="/marketplace" onClick={() => setIsMenuOpen(false)} className={`${mobileLinkClasses} text-gray-200 hover:bg-indigo-600 hover:text-white`}>
+      {/* MOBILE MENU */}
+      {isMenuOpen && (
+        <div className="md:hidden bg-gray-50 border-t border-gray-200 px-4 py-3 space-y-1">
+
+          <Link to="/marketplace" onClick={() => setIsMenuOpen(false)}
+            className={`${mobileLink} text-gray-700 hover:bg-indigo-100`}>
             Marketplace
           </Link>
-          <Link to="/add-pet" onClick={() => setIsMenuOpen(false)} className={`${mobileLinkClasses} text-gray-200 hover:bg-indigo-600 hover:text-white`}>
-            Add Pet
-          </Link>
-          <Link to="/notifications" onClick={() => setIsMenuOpen(false)} className={`${mobileLinkClasses} text-gray-200 hover:bg-indigo-600 hover:text-white`}>
+
+          <Link to="/notifications" onClick={() => setIsMenuOpen(false)}
+            className={`${mobileLink} text-gray-700 hover:bg-indigo-100`}>
             Notifications
           </Link>
 
-          {/* Mobile User Links */}
+          {/* PRIMARY ACTION MOBILE LINK (Lost & Found) */}
+          <Link to="/report" onClick={() => setIsMenuOpen(false)}
+            className={`${mobileLink} font-bold text-white bg-red-600 hover:bg-red-700`}>
+            🚨 Lost & Found
+          </Link>
+
           {user && (
             <>
-              <Link to="/dashboard" onClick={() => setIsMenuOpen(false)} className={`${mobileLinkClasses} font-semibold text-indigo-300 hover:bg-indigo-600 hover:text-white`}>
+              {/* Dashboard Link */}
+              <Link to="/dashboard" onClick={() => setIsMenuOpen(false)}
+                className={`${mobileLink} font-bold text-indigo-600 hover:bg-indigo-100`}>
                 Dashboard
               </Link>
-              <Link to={`/user/${user.id}`} onClick={() => setIsMenuOpen(false)} className={`${mobileLinkClasses} text-gray-200 hover:bg-gray-600 hover:text-white`}>
+
+              {/* Profile Link */}
+              <Link to={`/user/${user.id}`} onClick={() => setIsMenuOpen(false)}
+                className={`${mobileLink} text-indigo-600 hover:bg-indigo-100`}>
                 My Profile
               </Link>
             </>
           )}
 
-          {/* Mobile Rescue Link */}
           {isRescueUser && (
-            <Link to="/rescue" onClick={() => setIsMenuOpen(false)} className={`${mobileLinkClasses} font-bold text-yellow-300 bg-red-700 hover:bg-red-600`}>
-              🚨 Rescue Reports
+            <Link to="/rescue" onClick={() => setIsMenuOpen(false)}
+              className={`${mobileLink} bg-teal-500 text-white font-bold hover:bg-teal-600`}>
+              Rescue Dashboard
             </Link>
           )}
         </div>
-      </div>
+      )}
     </nav>
   );
 }

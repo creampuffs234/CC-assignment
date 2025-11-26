@@ -36,7 +36,7 @@ export default function Marketplace() {
 
   return (
     // 1. Marketplace Container: Use a subtle texture or gradient background
-    <div className="min-h-screen bg-white"> 
+    <div className="min-h-screen bg-teal-500 "> 
       <div className="max-w-7xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
         
         {/* Header Section */}
