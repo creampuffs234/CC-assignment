@@ -21,19 +21,18 @@ function Wrapper({ children }) {
 
     loadSession();
 
-    // --- Auth Listener: Syncs instantly when user logs in or logs out ---
-    const {
-      data: authListener,
-    } = supabase.auth.onAuthStateChange((_event, newSession) => {
-      setSession(newSession);
-    });
+    // Auth state listener
+    const { data: listener } = supabase.auth.onAuthStateChange(
+      (_event, newSession) => {
+        setSession(newSession);
+      }
+    );
 
     return () => {
-      authListener.subscription.unsubscribe();
+      listener.subscription.unsubscribe();
     };
   }, []);
 
-  // Loading screen (prevents flicker)
   if (loading) {
     return (
       <div className="w-full min-h-screen flex items-center justify-center text-gray-600 text-lg">
@@ -42,12 +41,10 @@ function Wrapper({ children }) {
     );
   }
 
-  // If not logged in → redirect to login page
   if (!session) {
     return <Navigate to="/login" replace />;
   }
 
-  // Authenticated → render page normally
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
