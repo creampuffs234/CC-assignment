@@ -1,8 +1,9 @@
 // src/pages/Wrapper.jsx
 import React, { useEffect, useState } from "react";
-import supabase from "../helper/supabaseClient";
+import supabase from "../helper/supabaseClient.js";
+
 import { Navigate } from "react-router-dom";
-import Navbar from "../components/Navbar";
+import Navbar from "../components/Navbar.jsx";
 
 function Wrapper({ children }) {
   const [session, setSession] = useState(null);
