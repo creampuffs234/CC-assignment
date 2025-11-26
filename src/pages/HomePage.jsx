@@ -1,7 +1,8 @@
+// src/pages/HomePage.jsx
 import React from "react";
 import { Link } from "react-router-dom";
 
-function Home() {
+function HomePage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 to-blue-300">
       <div className="bg-white p-10 rounded-2xl shadow-lg w-full max-w-md text-center">
@@ -14,7 +15,6 @@ function Home() {
         </p>
 
         <div className="flex flex-col gap-4">
-          
           <Link
             to="/register"
             className="w-full bg-blue-600 text-white py-3 rounded-xl hover:bg-blue-700 transition font-medium"
@@ -28,11 +28,10 @@ function Home() {
           >
             Login
           </Link>
-
         </div>
       </div>
     </div>
   );
 }
 
-export default Home;
+export default HomePage;

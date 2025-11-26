@@ -1,9 +1,12 @@
 import { createClient } from "@supabase/supabase-js";
 
-// Load from environment variables
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// DEBUG — REMOVE LATER
+console.log("URL:", supabaseUrl);
+console.log("KEY:", supabaseAnonKey ? "LOADED" : "MISSING");
+
+export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 export default supabase;

@@ -2,182 +2,113 @@
 import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
-/* -------------------------------
-   Public Pages
--------------------------------- */
-import Home from "./pages/home";
-import About from "./pages/About";
-import Registration from "./pages/Registration";
-import Login from "./pages/Login";
+/* ------------------------------------------
+   PUBLIC PAGES
+------------------------------------------- */
+import HomePage from "./pages/HomePage.jsx";
+import Registration from "./pages/Registration.jsx";
+import Login from "./pages/Login.jsx";
 
-/* -------------------------------
-   Protected Pages
--------------------------------- */
-import Wrapper from "./pages/wrapper";
-import Dashboard from "./pages/dashboard";
-import Marketplace from "./pages/Marketplace";
-import AnimalDetails from "./pages/AnimalDetails";
-import AdoptionForm from "./pages/AdoptionForm";
-import AddPet from "./pages/AddPet";
-import Notifications from "./pages/Notifications";
-import AdoptionList from "./pages/AdoptionList";
-import CreateShelter from "./pages/CreateShelter";
-import AdminShelterRequests from "./pages/AdminShelterRequests";
-import ShelterPage from "./pages/ShelterPage";
-import UserPage from "./pages/UserPage";
-import RescueDashboard from "./pages/RescueDashboard";
-import ReportLostFound from "./pages/ReportLostFound";
-import MyLostReports from "./pages/MyLostReports";   // <-- NEW PAGE
+/* ------------------------------------------
+   PROTECTED WRAPPER
+------------------------------------------- */
+import Wrapper from "./pages/Wrapper.jsx";
 
-/* -------------------------------
-   Email Approval Pages (Public)
--------------------------------- */
-import AdoptionApprove from "./pages/AdoptionApprove";
-import AdoptionReject from "./pages/AdoptionReject";
+/* ------------------------------------------
+   MAIN PROTECTED PAGES
+------------------------------------------- */
+import Dashboard from "./pages/Dashboard.jsx";
+import Marketplace from "./pages/Marketplace.jsx";
+import AnimalDetails from "./pages/AnimalDetails.jsx";
+import AdoptionForm from "./pages/AdoptionForm.jsx";
+import AddPet from "./pages/AddPet.jsx";
+import Notifications from "./pages/Notifications.jsx";
+import AdoptionList from "./pages/AdoptionList.jsx";
+import CreateShelter from "./pages/CreateShelter.jsx";
+import AdminShelterRequests from "./pages/AdminShelterRequests.jsx";
+import ShelterPage from "./pages/ShelterPage.jsx";
+import UserPage from "./pages/UserPage.jsx";
+import RescueDashboard from "./pages/RescueDashboard.jsx";
+
+/* ------------------------------------------
+   EMAIL APPROVAL PAGES (PUBLIC)
+------------------------------------------- */
+import AdoptionApprove from "./pages/AdoptionApprove.jsx";
+import AdoptionReject from "./pages/AdoptionReject.jsx";
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
 
-        {/* PUBLIC ROUTES */}
-        <Route path="/" element={<Home />} />
-        <Route path="/about" element={<About />} />
+        {/* ---------- PUBLIC ROUTES ---------- */}
+        <Route path="/" element={<HomePage />} />
         <Route path="/register" element={<Registration />} />
         <Route path="/login" element={<Login />} />
 
-        {/* Email approval links */}
+        {/* ---------- EMAIL APPROVAL PAGES ---------- */}
         <Route path="/adoption-approve/:id" element={<AdoptionApprove />} />
         <Route path="/adoption-reject/:id" element={<AdoptionReject />} />
 
-        {/* PROTECTED ROUTES */}
+        {/* ---------- PROTECTED ROUTES (Require Login) ---------- */}
         <Route
           path="/dashboard"
-          element={
-            <Wrapper>
-              <Dashboard />
-            </Wrapper>
-          }
+          element={<Wrapper><Dashboard /></Wrapper>}
         />
 
         <Route
           path="/marketplace"
-          element={
-            <Wrapper>
-              <Marketplace />
-            </Wrapper>
-          }
+          element={<Wrapper><Marketplace /></Wrapper>}
         />
 
         <Route
           path="/animal/:id"
-          element={
-            <Wrapper>
-              <AnimalDetails />
-            </Wrapper>
-          }
+          element={<Wrapper><AnimalDetails /></Wrapper>}
         />
 
         <Route
           path="/adopt/:id"
-          element={
-            <Wrapper>
-              <AdoptionForm />
-            </Wrapper>
-          }
+          element={<Wrapper><AdoptionForm /></Wrapper>}
         />
 
         <Route
           path="/add-pet"
-          element={
-            <Wrapper>
-              <AddPet />
-            </Wrapper>
-          }
+          element={<Wrapper><AddPet /></Wrapper>}
         />
 
         <Route
           path="/notifications"
-          element={
-            <Wrapper>
-              <Notifications />
-            </Wrapper>
-          }
+          element={<Wrapper><Notifications /></Wrapper>}
         />
 
         <Route
           path="/adoption-list"
-          element={
-            <Wrapper>
-              <AdoptionList />
-            </Wrapper>
-          }
+          element={<Wrapper><AdoptionList /></Wrapper>}
         />
 
         <Route
           path="/create-shelter"
-          element={
-            <Wrapper>
-              <CreateShelter />
-            </Wrapper>
-          }
+          element={<Wrapper><CreateShelter /></Wrapper>}
         />
 
         <Route
           path="/admin/shelters"
-          element={
-            <Wrapper>
-              <AdminShelterRequests />
-            </Wrapper>
-          }
+          element={<Wrapper><AdminShelterRequests /></Wrapper>}
         />
 
         <Route
           path="/shelter/:id"
-          element={
-            <Wrapper>
-              <ShelterPage />
-            </Wrapper>
-          }
+          element={<Wrapper><ShelterPage /></Wrapper>}
         />
 
         <Route
           path="/user/:id"
-          element={
-            <Wrapper>
-              <UserPage />
-            </Wrapper>
-          }
+          element={<Wrapper><UserPage /></Wrapper>}
         />
 
-        {/* RESCUE DASHBOARD */}
         <Route
           path="/rescue"
-          element={
-            <Wrapper>
-              <RescueDashboard />
-            </Wrapper>
-          }
-        />
-
-        {/* LOST REPORT PAGE */}
-        <Route
-          path="/report"
-          element={
-            <Wrapper>
-              <ReportLostFound />
-            </Wrapper>
-          }
-        />
-
-        {/* NEW: USER LOST REPORTS PAGE */}
-        <Route
-          path="/user/reports"
-          element={
-            <Wrapper>
-              <MyLostReports />
-            </Wrapper>
-          }
+          element={<Wrapper><RescueDashboard /></Wrapper>}
         />
 
       </Routes>

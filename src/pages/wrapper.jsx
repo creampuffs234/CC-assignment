@@ -5,30 +5,53 @@ import { Navigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 
 function Wrapper({ children }) {
-  const [authenticated, setAuthenticated] = useState(false);
+  const [session, setSession] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const checkAuth = async () => {
-      const { data: userData } = await supabase.auth.getUser();
-      const user = userData?.user;
+    // Load initial session
+    const loadSession = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
 
-      setAuthenticated(!!user);
+      setSession(session);
       setLoading(false);
     };
 
-    checkAuth();
+    loadSession();
+
+    // --- Auth Listener: Syncs instantly when user logs in or logs out ---
+    const {
+      data: authListener,
+    } = supabase.auth.onAuthStateChange((_event, newSession) => {
+      setSession(newSession);
+    });
+
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
   }, []);
 
-  if (loading) return <div className="p-6">Loading...</div>;
+  // Loading screen (prevents flicker)
+  if (loading) {
+    return (
+      <div className="w-full min-h-screen flex items-center justify-center text-gray-600 text-lg">
+        Loading...
+      </div>
+    );
+  }
 
-  // REDIRECT UNAUTHENTICATED USERS TO LOGIN (NOT HOME)
-  if (!authenticated) return <Navigate to="/login" />;
+  // If not logged in → redirect to login page
+  if (!session) {
+    return <Navigate to="/login" replace />;
+  }
 
+  // Authenticated → render page normally
   return (
-    <div>
+    <div className="min-h-screen bg-gray-50">
       <Navbar />
-      <div>{children}</div>
+      <div className="pt-4 px-4 pb-12">{children}</div>
     </div>
   );
 }
