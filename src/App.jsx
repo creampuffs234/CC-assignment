@@ -31,6 +31,14 @@ import UserPage from "./pages/UserPage.jsx";
 import RescueDashboard from "./pages/RescueDashboard.jsx";
 
 /* ------------------------------------------
+   LOST PET SYSTEM PAGES (NEW)
+------------------------------------------- */
+import ReportLostFound from "./pages/ReportLostFound.jsx";
+import LostReports from "./pages/LostReports.jsx";
+import MyLostReports from "./pages/MyLostReports.jsx";
+import LostReportDetails from "./pages/LostReportDetails.jsx";
+
+/* ------------------------------------------
    EMAIL APPROVAL PAGES (PUBLIC)
 ------------------------------------------- */
 import AdoptionApprove from "./pages/AdoptionApprove.jsx";
@@ -52,28 +60,43 @@ function App() {
 
         {/* ---------- PROTECTED ROUTES ---------- */}
         <Route path="/dashboard" element={<Wrapper><Dashboard /></Wrapper>} />
-
         <Route path="/marketplace" element={<Wrapper><Marketplace /></Wrapper>} />
-
         <Route path="/animal/:id" element={<Wrapper><AnimalDetails /></Wrapper>} />
-
         <Route path="/adopt/:id" element={<Wrapper><AdoptionForm /></Wrapper>} />
-
         <Route path="/add-pet" element={<Wrapper><AddPet /></Wrapper>} />
-
         <Route path="/notifications" element={<Wrapper><Notifications /></Wrapper>} />
-
         <Route path="/adoption-list" element={<Wrapper><AdoptionList /></Wrapper>} />
-
         <Route path="/create-shelter" element={<Wrapper><CreateShelter /></Wrapper>} />
-
         <Route path="/admin/shelters" element={<Wrapper><AdminShelterRequests /></Wrapper>} />
-
         <Route path="/shelter/:id" element={<Wrapper><ShelterPage /></Wrapper>} />
-
         <Route path="/user/:id" element={<Wrapper><UserPage /></Wrapper>} />
-
         <Route path="/rescue" element={<Wrapper><RescueDashboard /></Wrapper>} />
+
+        {/* ---------- LOST PET SYSTEM ROUTES ---------- */}
+
+        {/* Submit Lost Report */}
+        <Route
+          path="/report-lost"
+          element={<Wrapper><ReportLostFound /></Wrapper>}
+        />
+
+        {/* Community Lost Reports */}
+        <Route
+          path="/lost-reports"
+          element={<Wrapper><LostReports /></Wrapper>}
+        />
+
+        {/* Single Report Details (Shelter/Admin) */}
+        <Route
+          path="/lost-reports/:id"
+          element={<Wrapper><LostReportDetails /></Wrapper>}
+        />
+
+        {/* My own reports */}
+        <Route
+          path="/my-lost-reports"
+          element={<Wrapper><MyLostReports /></Wrapper>}
+        />
 
       </Routes>
     </BrowserRouter>

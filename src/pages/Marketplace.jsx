@@ -11,9 +11,8 @@ export default function Marketplace() {
   const [breed, setBreed] = useState("");
   const navigate = useNavigate();
 
-  // Load animals with optional filters
+  // 🔥 FIX: loadAnimals is outside the effect (safe)
   const loadAnimals = async (filters = {}) => {
-    // ... (Functional code remains unchanged)
     const { data, error } = await fetchAnimals(filters);
 
     if (error) {
@@ -24,35 +23,39 @@ export default function Marketplace() {
     setAnimals(data || []);
   };
 
-  // Proper React-safe useEffect (fixed warning)
+  // 🔥 FIX: safe async wrapper inside effect
   useEffect(() => {
-    // ... (Functional code remains unchanged)
-    const fetchInitial = async () => {
+    const init = async () => {
       await loadAnimals();
     };
-
-    fetchInitial();
+    init();
   }, []);
 
   return (
-    // 1. Marketplace Container: Use a subtle texture or gradient background
-    <div className="min-h-screen bg-teal-500 "> 
-      <div className="max-w-7xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
-        
-        {/* Header Section */}
-        <div className="text-center mb-10">
-          <p className="text-sm font-semibold text-indigo-600 uppercase tracking-wide">Find Your New Best Friend</p>
-          <h2 className="text-4xl font-extrabold text-gray-900 mt-1 sm:text-5xl">
-            Adoption Marketplace 🐾
-          </h2>
-          <p className="mt-4 text-xl text-gray-500">
-            Browse our loving animals ready for a forever home.
-          </p>
-        </div>
+    // Background change: Using a clean, light color with a subtle pattern/wave top
+    <div className="min-h-screen bg-blue-200 ">
+      
+      {/* Hero Section Banner */}
+      <div className="bg-indigo-600 pb-16 pt-12 shadow-lg">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            
+            <p className="text-sm font-semibold text-indigo-200 uppercase tracking-widest">
+              Find Your New Best Friend
+            </p>
+            <h2 className="text-5xl font-extrabold text-white mt-2 sm:text-6xl">
+              Adoption Marketplace 🐾
+            </h2>
+            <p className="mt-4 text-xl text-indigo-100 max-w-2xl mx-auto">
+              Browse animals posted by verified shelters.
+            </p>
+          </div>
+      </div>
+      
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-8"> {/* Negative margin pulls content up */}
 
-        {/* 2. Filter Bar Styling: Add padding, shadow, and a distinct border */}
-        <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100 mb-8">
-           <FilterBar
+        {/* Filter Bar (Now sits as a prominent card on the background) */}
+        <div className="bg-white p-6 sm:p-8 rounded-xl shadow-2xl border border-indigo-200/50 mb-10">
+          <FilterBar
             species={species}
             setSpecies={setSpecies}
             breed={breed}
@@ -68,23 +71,27 @@ export default function Marketplace() {
           />
         </div>
 
+        {/* Animals Grid */}
+        <div className="pb-12">
+            <h3 className="text-2xl font-bold text-gray-800 mb-6">Available Pets</h3>
+            
+            <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {animals.length === 0 && (
+                <div className="text-center col-span-full py-12 bg-white rounded-xl shadow border border-gray-200">
+                    <p className="text-lg italic text-gray-600">
+                      🥺 No animals found. Try adjusting your filters.
+                    </p>
+                </div>
+              )}
 
-        {/* 3. Content Display: Update the grid for better responsiveness and flow */}
-        <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 mt-6">
-          {animals.length === 0 && (
-            <p className="text-gray-600 text-center col-span-full py-12 text-lg italic">
-              🥺 No animals found matching your criteria. Try adjusting your filters.
-            </p>
-          )}
-
-          {animals.map((pet) => (
-            // Assuming PetCard now looks nicer
-            <PetCard 
-              key={pet.id}
-              pet={pet}
-              onView={(id) => navigate(`/animal/${id}`)}
-            />
-          ))}
+              {animals.map((pet) => (
+                <PetCard
+                  key={pet.id}
+                  pet={pet}
+                  onView={(id) => navigate(`/animal/${id}`)}
+                />
+              ))}
+            </div>
         </div>
       </div>
     </div>

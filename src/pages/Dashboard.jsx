@@ -6,71 +6,75 @@ import { getShelterByUser } from "../services/shelterService";
 
 export default function Dashboard() {
   const navigate = useNavigate();
+
   const [user, setUser] = useState(null);
-  const [profileType, setProfileType] = useState("user"); // user | shelter | pending
+  const [profileType, setProfileType] = useState("user"); 
   const [shelterRow, setShelterRow] = useState(null);
   const [isRescue, setIsRescue] = useState(false);
 
   useEffect(() => {
-    const loadUser = async () => {
-      const { data: auth } = await supabase.auth.getUser();
-      const authUser = auth?.user;
-      setUser(authUser);
-      if (!authUser) return;
-
-      // RESCUE TEAM CHECK
-      const { data: rescueCheck } = await supabase
-        .from("rescue_team")
-        .select("*")
-        .eq("user_email", authUser.email)
-        .maybeSingle();
-      if (rescueCheck) setIsRescue(true);
-
-      // SHELTER CHECK
-      const { data: shelterData } = await getShelterByUser(authUser.id);
-      if (shelterData) {
-        setShelterRow(shelterData);
-        if (shelterData.status === "approved") setProfileType("shelter");
-        else setProfileType("pending");
-      }
-    };
-
-    loadUser();
+    load();
   }, []);
 
-  const Signout = async () => {
+  async function load() {
+    const { data: auth } = await supabase.auth.getUser();
+    const authUser = auth?.user;
+
+    setUser(authUser);
+    if (!authUser) return;
+
+    // RESCUE TEAM CHECK
+    const { data: rescueCheck } = await supabase
+      .from("rescue_team")
+      .select("*")
+      .eq("email", authUser.email)
+      .maybeSingle();
+
+    if (rescueCheck) setIsRescue(true);
+
+    // SHELTER CHECK
+    const { data: shelterData } = await getShelterByUser(authUser.id);
+    if (shelterData) {
+      setShelterRow(shelterData);
+
+      if (shelterData.status === "approved") setProfileType("shelter");
+      else setProfileType("pending");
+    }
+  }
+
+  async function Signout() {
     const { error } = await supabase.auth.signOut();
     if (!error) navigate("/login");
-  };
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-green-700 to-purple-700 text-white p-8">
+      
       {/* HEADER */}
-      <div className="max-w-4xl mx-auto text-center mb-10">
+      <div className="max-w-4xl mx-auto text-center mb 10">
         <h1 className="text-4xl font-bold">Dashboard</h1>
         <p className="text-gray-200 mt-2">Welcome {user?.email}</p>
-        <p className="text-gray-300 text-sm capitalize">
-          Account Type: {profileType}
-        </p>
+        <p className="text-gray-300 text-sm capitalize">Account Type: {profileType}</p>
 
-        {shelterRow?.status === "pending" && (
-          <p className="text-yellow-300 mt-2">Shelter registration pending...</p>
+        {profileType === "pending" && (
+          <p className="text-yellow-300 mt-2">Shelter registration pending approval...</p>
         )}
-        {shelterRow?.status === "rejected" && (
-          <p className="text-red-300 mt-2">Shelter registration was rejected.</p>
+        {profileType === "shelter" && (
+          <p className="text-blue-300 mt-2">Shelter Admin</p>
         )}
         {isRescue && (
           <p className="text-blue-300 mt-2">Rescue Team Member</p>
         )}
       </div>
 
-      {/* GRID */}
+      {/* GRID SECTIONS */}
       <div className="max-w-4xl mx-auto space-y-10">
 
-        {/* GENERAL FEATURES */}
+        {/* GENERAL */}
         <section>
           <h2 className="text-2xl font-semibold mb-4">General</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+
             <DashboardCard
               title="Marketplace"
               desc="Browse animals for adoption"
@@ -78,18 +82,20 @@ export default function Dashboard() {
               navigate={navigate}
             />
 
-            <DashboardCard
-              title="Add a Pet"
-              desc="Post a new pet for adoption"
-              route="/add-pet"
-              navigate={navigate}
-            />
+            {profileType === "shelter" && (
+              <DashboardCard
+                title="Add a Pet"
+                desc="Shelters can post animals for adoption"
+                route="/add-pet"
+                navigate={navigate}
+              />
+            )}
 
             <DashboardCard
               title="Adoption Requests"
               desc={
                 profileType === "shelter"
-                  ? "Requests submitted to your shelter"
+                  ? "Requests sent to your shelter"
                   : "Your adoption requests"
               }
               route="/adoption-list"
@@ -98,35 +104,41 @@ export default function Dashboard() {
           </div>
         </section>
 
+
         {/* LOST & FOUND SECTION */}
         <section>
           <h2 className="text-2xl font-semibold mb-4">Lost & Found</h2>
+
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
 
+            {/* FIXED: Report Lost Route */}
             <DashboardCard
               title="Report Lost Pet"
               desc="Submit a lost pet report"
-              route="/report"
+              route="/report-lost"
               navigate={navigate}
             />
 
+            {/* FIXED: All Lost Reports */}
             <DashboardCard
-              title="Lost Reports"
-              desc="View all lost pet reports"
+              title="All Lost Reports"
+              desc="Browse all open lost pet reports"
               route="/lost-reports"
               navigate={navigate}
             />
 
+            {/* FIXED: My Lost Reports */}
             <DashboardCard
               title="My Lost Reports"
-              desc="View reports you submitted"
-              route="/user/reports"
+              desc="View lost pet reports you submitted"
+              route="/my-lost-reports"
               navigate={navigate}
             />
           </div>
         </section>
 
-        {/* SHELTER FEATURES */}
+
+        {/* SHELTER REGISTRATION */}
         {profileType === "user" && !shelterRow && (
           <section>
             <h2 className="text-2xl font-semibold mb-4">Shelter Registration</h2>
@@ -139,19 +151,20 @@ export default function Dashboard() {
           </section>
         )}
 
+        {/* SHELTER MANAGEMENT */}
         {profileType === "shelter" && (
           <section>
             <h2 className="text-2xl font-semibold mb-4">Shelter Management</h2>
             <DashboardCard
               title="My Shelter"
-              desc="Manage shelter animals and lost reports"
-              route={`/shelter/${shelterRow?.id}`}
+              desc="Manage shelter animals & lost reports"
+              route={`/shelter/${shelterRow.id}`}
               navigate={navigate}
             />
           </section>
         )}
 
-        {/* RESCUE TEAM */}
+        {/* RESCUE DASHBOARD */}
         {isRescue && (
           <section>
             <h2 className="text-2xl font-semibold mb-4">Rescue Team</h2>
@@ -178,7 +191,8 @@ export default function Dashboard() {
   );
 }
 
-/* Reusable Card Component */
+
+/* 🔹 Reusable Card Component */
 function DashboardCard({ title, desc, route, navigate }) {
   return (
     <div

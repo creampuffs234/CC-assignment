@@ -18,6 +18,27 @@ export default function AddPet() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // Get logged in user
+    const { data: auth } = await supabase.auth.getUser();
+    const user = auth?.user;
+    if (!user) {
+      alert("You must be logged in.");
+      return;
+    }
+
+    // Get shelter row for this user
+    const { data: shelter } = await supabase
+      .from("shelters")
+      .select("*")
+      .eq("admin_user_id", user.id)
+      .maybeSingle();
+
+    if (!shelter) {
+      alert("Only shelters can publish animals.");
+      return;
+    }
+
+    // Upload image if exists
     let image_url = null;
     if (file) {
       const { publicUrl, error } = await uploadImage(file);
@@ -28,30 +49,7 @@ export default function AddPet() {
       image_url = publicUrl;
     }
 
-    // Auth user
-    const { data: sessionData } = await supabase.auth.getUser();
-    const user = sessionData?.user;
-
-    if (!user) {
-      alert("You must be logged in to post a pet.");
-      return;
-    }
-
-    // Fetch user profile (for name, phone, avatar)
-    const { data: profile } = await supabase
-      .from("user_profiles")
-      .select("*")
-      .eq("id", user.id)
-      .maybeSingle();
-
-    // Fetch shelter (if user is a shelter admin)
-    const { data: shelter } = await supabase
-      .from("shelters")
-      .select("*")
-      .eq("admin_user_id", user.id)
-      .maybeSingle();
-
-    // FINAL PAYLOAD — MATCHES YOUR DATABASE EXACTLY
+    // Insert new animal
     const payload = {
       title,
       species,
@@ -62,26 +60,21 @@ export default function AddPet() {
       image_url,
       is_active: true,
 
-      // Owner fields (VALID)
+      shelter_id: shelter.id,
+      shelter_name: shelter.name,
+      shelter_email: shelter.email,
+
       owner_id: user.id,
-      owner_name: profile?.full_name || null,
-      owner_email: user.email,
-      owner_phone: profile?.phone || null,
-      owner_avatar: profile?.avatar_url || null,
+      owner_name: user.email,
 
-      // Shelter fields (VALID)
-      shelter_id: shelter?.id || null,
-      shelter_name: shelter?.name || null,
-      shelter_email: shelter?.email || null,
-
-      adoption_status: "available",
+      adoption_status: "open",
     };
 
-    const { data, error } = await createAnimal(payload);
+    const { error } = await createAnimal(payload);
 
     if (error) {
       console.error(error);
-      alert(error.message || "Error creating pet listing.");
+      alert(error.message);
       return;
     }
 
@@ -98,86 +91,73 @@ export default function AddPet() {
 
         <form onSubmit={handleSubmit} className="space-y-5">
 
-          {/* TITLE */}
           <div>
-            <label className="block text-gray-700 font-medium mb-1">Pet Title</label>
+            <label className="font-medium">Pet Title</label>
             <input
+              className="w-full p-3 border rounded"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full p-3 border border-gray-300 rounded-lg"
               required
             />
           </div>
 
-          {/* SPECIES */}
           <div>
-            <label className="block text-gray-700 font-medium mb-1">Species</label>
+            <label className="font-medium">Species</label>
             <select
+              className="w-full p-3 border rounded"
               value={species}
               onChange={(e) => setSpecies(e.target.value)}
-              className="w-full p-3 border border-gray-300 rounded-lg"
             >
               <option value="dog">Dog</option>
               <option value="cat">Cat</option>
             </select>
           </div>
 
-          {/* BREED */}
           <div>
-            <label className="block text-gray-700 font-medium mb-1">Breed</label>
+            <label className="font-medium">Breed</label>
             <input
+              className="w-full p-3 border rounded"
               value={breed}
               onChange={(e) => setBreed(e.target.value)}
-              className="w-full p-3 border border-gray-300 rounded-lg"
             />
           </div>
 
-          {/* AGE & GENDER */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-gray-700">Age</label>
+              <label className="font-medium">Age</label>
               <input
+                className="w-full p-3 border rounded"
                 value={age}
                 onChange={(e) => setAge(e.target.value)}
-                className="w-full p-3 border border-gray-300 rounded-lg"
               />
             </div>
-
             <div>
-              <label className="block text-gray-700">Gender</label>
+              <label className="font-medium">Gender</label>
               <input
+                className="w-full p-3 border rounded"
                 value={gender}
                 onChange={(e) => setGender(e.target.value)}
-                className="w-full p-3 border border-gray-300 rounded-lg"
               />
             </div>
           </div>
 
-          {/* DESCRIPTION */}
           <div>
-            <label className="block text-gray-700">Description</label>
+            <label className="font-medium">Description</label>
             <textarea
+              className="w-full p-3 border rounded min-h-[120px]"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="w-full p-3 border border-gray-300 rounded-lg min-h-[120px]"
             />
           </div>
 
-          {/* IMAGE UPLOAD */}
           <div>
-            <label className="block text-gray-700 font-medium mb-2">Pet Image</label>
-            <div className="w-full border-2 border-dashed border-gray-300 rounded-xl p-6 bg-gray-50 text-center">
-              <input
-                type="file"
-                accept="image/*"
-                onChange={(e) => setFile(e.target.files?.[0])}
-                className="hidden"
-                id="petImage"
-              />
-              <label htmlFor="petImage" className="cursor-pointer">
-                {file ? file.name : "Click to upload an image"}
-              </label>
-            </div>
+            <label className="font-medium">Pet Image</label>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => setFile(e.target.files?.[0])}
+              className="w-full p-3 border rounded"
+            />
           </div>
 
           <button className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-lg">
